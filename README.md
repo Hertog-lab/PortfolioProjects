@@ -1,2 +1,2 @@
 # ProjectList
-This repository has a collection of snippits from past projects with quick explinations of said projects.
+This repository has a collection of snippets from past projects with quick explanations of said projects.
