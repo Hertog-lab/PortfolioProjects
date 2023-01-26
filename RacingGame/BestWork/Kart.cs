@@ -31,17 +31,19 @@ public class Kart : MonoBehaviour
 
     private void Input()
     {
+    	//adjusts the base strength of the rotation
         float driftStrenght = 3;
         
-        //Forward
+        //Forward movement based on adding to the direction vector
         if (UnityEngine.Input.GetKey(forward))
         { p_direction += p_direction * (0.5f * Time.deltaTime); }
         
-        //Drifting/Turning
+        //Drifting/Turning by changing the z with the x and vice versa (plus additional modifiers to give a good feel while driving)
         if (UnityEngine.Input.GetKey(left))
         { p_direction = new Vector3(p_direction.x - (p_direction.z * driftStrenght * Time.deltaTime), 0f, p_direction.z + (p_direction.x * driftStrenght * Time.deltaTime)); }
         if (UnityEngine.Input.GetKey(right))
         { p_direction = new Vector3(p_direction.x + (p_direction.z * driftStrenght * Time.deltaTime), 0f, p_direction.z - (p_direction.x * driftStrenght * Time.deltaTime)); }
+		//Adds extra drifting modifiers 
         if (UnityEngine.Input.GetKey(left) || UnityEngine.Input.GetKey(right))
         {
             p_drifting = true;
@@ -50,12 +52,13 @@ public class Kart : MonoBehaviour
             float z = Mathf.Abs(p_direction.z);
             if (x > z) {p_direction.z += p_direction.z * (2.5f * Time.deltaTime);}
             if (x < z) {p_direction.x += p_direction.x * (2.5f * Time.deltaTime);}
+		//makes sure the drifting doesnt always happen
         } else {p_drifting = false;}
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        //Wall bounce
+        //Wall bounce achieved by flipping the strongest direction value determined by the normal of the collision object (only works with walls in this case)
         if (collision.transform.GetComponent<Wall>() == true)
         {
             p_direction = Vector3.Reflect(p_direction, collision.GetContact(0).normal);
@@ -65,19 +68,25 @@ public class Kart : MonoBehaviour
 
     private void MovementAppliance()
     {
+    	//updates the acceleration used by the camera to predict the kart movement and incase the kart is slow used to update the speed a bit to avoid standstills 
         p_acceleration = p_direction.magnitude;
+        //
         if (p_acceleration < 5.3f)
         { p_direction += p_direction * Time.deltaTime; }
+        //makes sure the kart rotates the right way
         kartColTrans.rotation = Quaternion.LookRotation(p_direction, Vector3.up);
+        //brings the visual part of the kart closer to the "accual" location of the kart
         kartColTrans.position = Vector3.Lerp(kartColTrans.position, transform.position, 0.05f);
+        //keeps the speed within the correct values
         p_direction = new Vector3(Mathf.Clamp(p_direction.x, -maxSpeedValue, maxSpeedValue), 0f, Mathf.Clamp(p_direction.z, -maxSpeedValue, maxSpeedValue));
+        //applies the movement
         rbody.position += p_direction * Time.deltaTime;
     }
 
     private void Update()
     {
+    //updates input and afterwards the movement
         Input();
-        //Collision
         MovementAppliance();
     }
     /*
